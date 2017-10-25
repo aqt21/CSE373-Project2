@@ -21,22 +21,22 @@ public class ChainedHashSet<T> implements ISet<T> {
 
     @Override
     public void add(T item) {
-        throw new NotYetImplementedException();
+        map.put(item, true);
     }
 
     @Override
     public void remove(T item) {
-        throw new NotYetImplementedException();
+        map.remove(item);
     }
 
     @Override
     public boolean contains(T item) {
-        throw new NotYetImplementedException();
+        return map.containsKey(item);
     }
 
     @Override
     public int size() {
-        throw new NotYetImplementedException();
+        return map.size();
     }
 
     @Override
@@ -54,12 +54,12 @@ public class ChainedHashSet<T> implements ISet<T> {
 
         @Override
         public boolean hasNext() {
-            throw new NotYetImplementedException();
+            return iter.hasNext();
         }
 
         @Override
         public T next() {
-            throw new NotYetImplementedException();
+            return iter.next().getKey();
         }
     }
 }

@@ -17,9 +17,11 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     private IDictionary<K, V>[] chains;
 
     // You're encouraged to add extra fields (and helper methods) though!
-
+    private int size;
+    
     public ChainedHashDictionary() {
-        throw new NotYetImplementedException();
+        this.chains = makeArrayOfChains(10);
+        this.size = 0;
     }
 
     /**
@@ -38,27 +40,76 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
 
     @Override
     public V get(K key) {
-        throw new NotYetImplementedException();
+        int hashCode;
+
+        if (key == null) {
+            hashCode = 0;
+        } else {
+            hashCode = Math.abs(key.hashCode()) % 10;
+        }
+        
+        return chains[hashCode].get(key);
     }
 
     @Override
     public void put(K key, V value) {
-        throw new NotYetImplementedException();
+        int hashCode;
+        int sizeDifference;
+        if (key == null) {
+            hashCode = 0;
+        } else {
+            hashCode = Math.abs(key.hashCode()) % 10;
+        }
+        
+        if (chains[hashCode] == null) {
+            chains[hashCode] = new ArrayDictionary<K, V>();
+            sizeDifference = 0;
+        } else {
+            sizeDifference = chains[hashCode].size();
+        }
+        chains[hashCode].put(key, value);
+        
+        size += (chains[hashCode].size() - sizeDifference);
     }
 
     @Override
     public V remove(K key) {
-        throw new NotYetImplementedException();
+        int hashCode;
+        
+        if (key == null) {
+            hashCode = 0;
+        } else {
+            hashCode = Math.abs(key.hashCode()) % 10;
+        }
+        
+        if (chains[hashCode] == null || !chains[hashCode].containsKey(key)) {
+            throw new NoSuchKeyException();
+        } else {
+            this.size--;
+            return chains[hashCode].remove(key);
+        }
     }
 
     @Override
     public boolean containsKey(K key) {
-        throw new NotYetImplementedException();
+        int hashCode;
+        
+        if (key == null) {
+            hashCode = 0;
+        } else {
+            hashCode = Math.abs(key.hashCode()) % 10;
+        }
+        
+        if (chains[hashCode] == null) {
+            return false;
+        } else {
+            return chains[hashCode].containsKey(key);
+        }
     }
 
     @Override
     public int size() {
-        throw new NotYetImplementedException();
+        return this.size;
     }
 
     @Override
@@ -105,6 +156,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
      */
     private static class ChainedIterator<K, V> implements Iterator<KVPair<K, V>> {
         private IDictionary<K, V>[] chains;
+        private int currentState = 0;
 
         public ChainedIterator(IDictionary<K, V>[] chains) {
             this.chains = chains;
@@ -112,12 +164,24 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
 
         @Override
         public boolean hasNext() {
-            throw new NotYetImplementedException();
+            while (currentState < 10) {
+                if (chains[currentState].iterator().hasNext()) {
+                    return true;
+                } else {
+                    currentState++;
+                }
+            }
+            
+            return false;
         }
 
         @Override
         public KVPair<K, V> next() {
-            throw new NotYetImplementedException();
+            if (this.hasNext()) {
+                return chains[currentState].iterator().next();
+            } else {
+                throw new NoSuchElementException();
+            }
         }
     }
 }
