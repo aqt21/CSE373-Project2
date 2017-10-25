@@ -120,11 +120,13 @@ public class ArrayDictionary<K, V> implements IDictionary<K, V> {
         // Array is full
         return -1;
     }
-    
+
     // Returns index of given key, returns -1 if key is not in array
     public int indexOf(K key) {
         for (int i = 0; i < this.size(); i++) {
-            if (this.pairs[i].key == null || this.pairs[i].key.equals(key)) {
+            if (key == null && this.pairs[i].key == null) {
+                return i;
+            } else if (this.pairs[i].key != null && this.pairs[i].key.equals(key)) {
                 return i;
             }
         }
@@ -146,13 +148,13 @@ public class ArrayDictionary<K, V> implements IDictionary<K, V> {
             return this.key + "=" + this.value;
         }
     }
-    
+
     @Override
     public Iterator<KVPair<K, V>> iterator() {
         return new ArrayDictionaryIterator<>(this.pairs, this.size);
     }
-    
-    private static class ArrayDictionaryIterator<K,V> implements Iterator<KVPair<K, V>> {
+
+    private static class ArrayDictionaryIterator<K, V> implements Iterator<KVPair<K, V>> {
         private Pair<K, V>[] pairs;
         private int size;
 
@@ -168,11 +170,7 @@ public class ArrayDictionary<K, V> implements IDictionary<K, V> {
          * returns 'false' otherwise.
          */
         public boolean hasNext() {
-             if(i > size - 1) {
-                 return false;
-             } else {
-                 return true;
-             }
+            return !(i > size - 1);
         }
 
         /**
@@ -183,14 +181,14 @@ public class ArrayDictionary<K, V> implements IDictionary<K, V> {
          *         there are no more elements to look at.
          */
         public KVPair<K, V> next() {
-             if(this.hasNext()) {
-                 KVPair<K, V> currPair = new KVPair<K, V>(this.pairs[i].key, this.pairs[i].value);
-                 i++;
-                 return currPair;
-             } else {
-                 throw new NoSuchElementException();
-             }
+            if (this.hasNext()) {
+                KVPair<K, V> currPair = new KVPair<K, V>(this.pairs[i].key, this.pairs[i].value);
+                i++;
+                return currPair;
+            } else {
+                throw new NoSuchElementException();
+            }
         }
     }
-    
+
 }
