@@ -157,12 +157,12 @@ public class ArrayDictionary<K, V> implements IDictionary<K, V> {
     private static class ArrayDictionaryIterator<K, V> implements Iterator<KVPair<K, V>> {
         private Pair<K, V>[] pairs;
         private int size;
-
-        int i = 0;
+        private int i;
 
         public ArrayDictionaryIterator(Pair<K, V>[] pairs, int size) {
             this.pairs = pairs;
             this.size = size;
+            this.i = 0;
         }
 
         /**

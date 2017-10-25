@@ -18,7 +18,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
 
     // You're encouraged to add extra fields (and helper methods) though!
     private int size;
-    
+
     public ChainedHashDictionary() {
         this.chains = makeArrayOfChains(10);
         this.size = 0;
@@ -47,7 +47,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
         } else {
             hashCode = Math.abs(key.hashCode()) % 10;
         }
-        
+
         return chains[hashCode].get(key);
     }
 
@@ -60,7 +60,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
         } else {
             hashCode = Math.abs(key.hashCode()) % 10;
         }
-        
+
         if (chains[hashCode] == null) {
             chains[hashCode] = new ArrayDictionary<K, V>();
             sizeDifference = 0;
@@ -68,20 +68,20 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
             sizeDifference = chains[hashCode].size();
         }
         chains[hashCode].put(key, value);
-        
+
         size += (chains[hashCode].size() - sizeDifference);
     }
 
     @Override
     public V remove(K key) {
         int hashCode;
-        
+
         if (key == null) {
             hashCode = 0;
         } else {
             hashCode = Math.abs(key.hashCode()) % 10;
         }
-        
+
         if (chains[hashCode] == null || !chains[hashCode].containsKey(key)) {
             throw new NoSuchKeyException();
         } else {
@@ -93,13 +93,13 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     @Override
     public boolean containsKey(K key) {
         int hashCode;
-        
+
         if (key == null) {
             hashCode = 0;
         } else {
             hashCode = Math.abs(key.hashCode()) % 10;
         }
-        
+
         if (chains[hashCode] == null) {
             return false;
         } else {
@@ -154,31 +154,48 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
      * 2. You **MAY** call the `.iterator()` method on each IDictionary
      *    instance inside your 'chains' array, however.
      */
+
     private static class ChainedIterator<K, V> implements Iterator<KVPair<K, V>> {
         private IDictionary<K, V>[] chains;
-        private int currentState = 0;
+        private int current;
+        private Iterator<KVPair<K, V>> iter;
 
         public ChainedIterator(IDictionary<K, V>[] chains) {
             this.chains = chains;
+            this.current = 0;
+            if (this.chains[current] != null) {
+                this.iter = this.chains[current].iterator();
+            }
+
         }
 
         @Override
         public boolean hasNext() {
-            while (currentState < 10) {
-                if (chains[currentState].iterator().hasNext()) {
-                    return true;
+            if (current > 9) {
+                return false;
+            } else if (iter == null || !iter.hasNext()) {
+                if (current == 9) {
+                    return false;
                 } else {
-                    currentState++;
+                    current++;
+                    if (chains[current] != null) {
+                        iter = chains[current].iterator();
+                    } else {
+                        iter = null;
+                    }
+                    return hasNext();
                 }
+            } else {
+                return true;
             }
-            
-            return false;
+
         }
 
         @Override
         public KVPair<K, V> next() {
             if (this.hasNext()) {
-                return chains[currentState].iterator().next();
+                KVPair<K, V> currPair = iter.next();
+                return currPair;
             } else {
                 throw new NoSuchElementException();
             }
