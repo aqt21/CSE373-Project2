@@ -47,26 +47,15 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
         } else {
             hashCode = 0;
         }
+        if (chains[hashCode] == null || !chains[hashCode].containsKey(key)) {
+            throw new NoSuchKeyException();
+        }
         return chains[hashCode].get(key);
     }
 
     @Override
     public void put(K key, V value) {
         int hashCode;
-       
-        
-        if ((double) this.size / (double) chains.length > 0.75) {
-            IDictionary<K, V>[] newChains = makeArrayOfChains(chains.length * 2);
-
-            while (this.iterator().hasNext()) {
-                KVPair<K, V> nextPair = this.iterator().next();
-                if (newChains[nextPair.hashCode() % newChains.length] == null) {
-                    newChains[nextPair.hashCode() % newChains.length] = new ArrayDictionary<K, V>();
-                }
-                newChains[nextPair.hashCode() % newChains.length].put(nextPair.getKey(), nextPair.getValue());
-            }
-            chains = newChains;
-        } 
         
         if (key != null) {
             hashCode = Math.abs(key.hashCode()) % chains.length;
@@ -81,6 +70,20 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
         chains[hashCode].put(key, value);
 
         this.size += (chains[hashCode].size() - sizeDifference);
+        
+        if ((double) this.size / (double) chains.length > 0.75) {
+            IDictionary<K, V>[] newChains = makeArrayOfChains(chains.length * 2 - 1);
+            
+            for (KVPair<K, V> pair : this) {
+                int newHash = pair.getKey().hashCode();
+                if (newChains[newHash % newChains.length] == null) {
+                    newChains[newHash % newChains.length] = new ArrayDictionary<K, V>();
+                }
+                newChains[newHash % newChains.length].put(pair.getKey(), pair.getValue());
+            }
+            
+            chains = newChains;
+        } 
     }
 
     @Override
@@ -92,7 +95,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
             hashCode = 0;
         }
         if (chains[hashCode] == null || !chains[hashCode].containsKey(key)) {
-            throw new NoSuchElementException();
+            throw new NoSuchKeyException();
         } else {
             this.size--;
             return chains[hashCode].remove(key);
@@ -192,7 +195,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
                 } else {
                     iter = null;
                 }
-                return hasNext();
+                return this.hasNext();
             }
             return true;
         }
