@@ -22,6 +22,10 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     public ChainedHashDictionary() {
         this.chains = makeArrayOfChains(10);
         this.size = 0;
+
+        for (int i = 0; i < 10; i++) {
+            chains[i] = new ArrayDictionary<K, V>();
+        }
     }
 
     /**
@@ -41,47 +45,36 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     @Override
     public V get(K key) {
         int hashCode;
-
-        if (key == null) {
-            hashCode = 0;
-        } else {
+        if (key != null) {
             hashCode = Math.abs(key.hashCode()) % 10;
+        } else {
+            hashCode = 0;
         }
-
         return chains[hashCode].get(key);
     }
 
     @Override
     public void put(K key, V value) {
         int hashCode;
-        int sizeDifference;
-        if (key == null) {
-            hashCode = 0;
-        } else {
+        if (key != null) {
             hashCode = Math.abs(key.hashCode()) % 10;
-        }
-
-        if (chains[hashCode] == null) {
-            chains[hashCode] = new ArrayDictionary<K, V>();
-            sizeDifference = 0;
         } else {
-            sizeDifference = chains[hashCode].size();
+            hashCode = 0;
         }
+        int sizeDifference = chains[hashCode].size();
         chains[hashCode].put(key, value);
 
-        size += (chains[hashCode].size() - sizeDifference);
+        this.size += (chains[hashCode].size() - sizeDifference);
     }
 
     @Override
     public V remove(K key) {
         int hashCode;
-
-        if (key == null) {
-            hashCode = 0;
-        } else {
+        if (key != null) {
             hashCode = Math.abs(key.hashCode()) % 10;
+        } else {
+            hashCode = 0;
         }
-
         if (chains[hashCode] == null || !chains[hashCode].containsKey(key)) {
             throw new NoSuchKeyException();
         } else {
@@ -93,11 +86,10 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     @Override
     public boolean containsKey(K key) {
         int hashCode;
-
-        if (key == null) {
-            hashCode = 0;
-        } else {
+        if (key != null) {
             hashCode = Math.abs(key.hashCode()) % 10;
+        } else {
+            hashCode = 0;
         }
 
         if (chains[hashCode] == null) {
@@ -106,7 +98,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
             return chains[hashCode].containsKey(key);
         }
     }
-
+    
     @Override
     public int size() {
         return this.size;
@@ -117,6 +109,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
         // Note: you do not need to change this method
         return new ChainedIterator<>(this.chains);
     }
+    
 
     /**
      * Hints:
@@ -176,26 +169,22 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
             } else if (iter == null || !iter.hasNext()) {
                 if (current == 9) {
                     return false;
-                } else {
-                    current++;
-                    if (chains[current] != null) {
-                        iter = chains[current].iterator();
-                    } else {
-                        iter = null;
-                    }
-                    return hasNext();
                 }
-            } else {
-                return true;
+                current++;
+                if (chains[current] != null) {
+                    iter = chains[current].iterator();
+                } else {
+                    iter = null;
+                }
+                return hasNext();
             }
-
+            return true;
         }
 
         @Override
         public KVPair<K, V> next() {
             if (this.hasNext()) {
-                KVPair<K, V> currPair = iter.next();
-                return currPair;
+                return iter.next();
             } else {
                 throw new NoSuchElementException();
             }

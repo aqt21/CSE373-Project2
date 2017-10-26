@@ -61,23 +61,22 @@ public class ArrayDictionary<K, V> implements IDictionary<K, V> {
 
     @Override
     public void put(K key, V value) {
-        if (this.containsKey(key)) {
-            this.pairs[this.indexOf(key)].value = value;
+        int index = this.indexOf(key);
+        if (index != -1) {
+            this.pairs[index].value = value;
         } else {
             // If array is full, create new array double size of old one and copy over old elements
-            int nextEmpty = this.nextEmpty(); 
-            if (nextEmpty == -1) {
+            if (this.size == this.pairs.length) {
                 int oldSize = this.pairs.length;
                 int newSize = oldSize * 2;
                 Pair<K, V>[] newPairs = this.makeArrayOfPairs(newSize);
                 for (int i = 0; i < oldSize; i++) {
                     newPairs[i] = this.pairs[i];
                 }
-                nextEmpty = oldSize;
                 this.pairs = newPairs;
             }
             Pair<K, V> newPair = new Pair<K, V>(key, value);
-            this.pairs[nextEmpty] = newPair;
+            this.pairs[this.size] = newPair;
             size++;
         }
     }
@@ -108,17 +107,6 @@ public class ArrayDictionary<K, V> implements IDictionary<K, V> {
     @Override
     public int size() {
         return this.size;
-    }
-
-    // Return next empty index in array, returns -1 if if array is full
-    public int nextEmpty() {
-        for (int i = 0; i < this.pairs.length; i++) {
-            if (this.pairs[i] == null) {
-                return i;
-            }
-        }
-        // Array is full
-        return -1;
     }
 
     // Returns index of given key, returns -1 if key is not in array
