@@ -1,7 +1,7 @@
 // Andrew Tran
 // Constance La
 // CSE 373
-// Project 1: Part 1
+// Project 2
 
 package datastructures.concrete.dictionaries;
 
