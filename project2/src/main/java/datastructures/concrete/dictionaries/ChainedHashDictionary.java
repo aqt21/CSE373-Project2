@@ -22,10 +22,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     public ChainedHashDictionary() {
         this.chains = makeArrayOfChains(10);
         this.size = 0;
-
-        for (int i = 0; i < 10; i++) {
-            chains[i] = new ArrayDictionary<K, V>();
-        }
+        
     }
 
     /**
@@ -46,7 +43,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     public V get(K key) {
         int hashCode;
         if (key != null) {
-            hashCode = Math.abs(key.hashCode()) % 10;
+            hashCode = Math.abs(key.hashCode()) % chains.length;
         } else {
             hashCode = 0;
         }
@@ -56,12 +53,31 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     @Override
     public void put(K key, V value) {
         int hashCode;
+       
+        
+        if ((double) this.size / (double) chains.length > 0.75) {
+            IDictionary<K, V>[] newChains = makeArrayOfChains(chains.length * 2);
+
+            while (this.iterator().hasNext()) {
+                KVPair<K, V> nextPair = this.iterator().next();
+                if (newChains[nextPair.hashCode() % newChains.length] == null) {
+                    newChains[nextPair.hashCode() % newChains.length] = new ArrayDictionary<K, V>();
+                }
+                newChains[nextPair.hashCode() % newChains.length].put(nextPair.getKey(), nextPair.getValue());
+            }
+            chains = newChains;
+        } 
+        
         if (key != null) {
-            hashCode = Math.abs(key.hashCode()) % 10;
+            hashCode = Math.abs(key.hashCode()) % chains.length;
         } else {
             hashCode = 0;
         }
+        if (chains[hashCode] == null) {
+            chains[hashCode] = new ArrayDictionary<K, V>();
+        }
         int sizeDifference = chains[hashCode].size();
+        
         chains[hashCode].put(key, value);
 
         this.size += (chains[hashCode].size() - sizeDifference);
@@ -71,12 +87,12 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     public V remove(K key) {
         int hashCode;
         if (key != null) {
-            hashCode = Math.abs(key.hashCode()) % 10;
+            hashCode = Math.abs(key.hashCode()) % chains.length;
         } else {
             hashCode = 0;
         }
         if (chains[hashCode] == null || !chains[hashCode].containsKey(key)) {
-            throw new NoSuchKeyException();
+            throw new NoSuchElementException();
         } else {
             this.size--;
             return chains[hashCode].remove(key);
@@ -87,7 +103,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     public boolean containsKey(K key) {
         int hashCode;
         if (key != null) {
-            hashCode = Math.abs(key.hashCode()) % 10;
+            hashCode = Math.abs(key.hashCode()) % chains.length;
         } else {
             hashCode = 0;
         }
@@ -164,10 +180,10 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
 
         @Override
         public boolean hasNext() {
-            if (current > 9) {
+            if (current > chains.length - 1) {
                 return false;
             } else if (iter == null || !iter.hasNext()) {
-                if (current == 9) {
+                if (current == chains.length - 1) {
                     return false;
                 }
                 current++;
