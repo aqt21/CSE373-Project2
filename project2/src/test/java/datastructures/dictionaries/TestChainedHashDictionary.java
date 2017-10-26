@@ -63,7 +63,7 @@ public class TestChainedHashDictionary extends TestDictionary {
         assertFalse(dict.containsKey(key1));
     }
 
-    @Test(timeout=10* SECOND)
+    @Test(timeout = 10*SECOND)
     public void stressTest() {
         int limit = 1000000;
         IDictionary<Integer, Integer> dict = this.newDictionary();

@@ -1,9 +1,13 @@
+// Andrew Tran
+// Constance La
+// CSE 373
+// Project 2
+
 package datastructures.concrete.dictionaries;
 
 import datastructures.concrete.KVPair;
 import datastructures.interfaces.IDictionary;
 import misc.exceptions.NoSuchKeyException;
-import misc.exceptions.NotYetImplementedException;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -17,12 +21,12 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     private IDictionary<K, V>[] chains;
 
     // You're encouraged to add extra fields (and helper methods) though!
-    private int size;
+    private int chainSize;
 
     public ChainedHashDictionary() {
         this.chains = makeArrayOfChains(10);
-        this.size = 0;
-        
+        this.chainSize = 0;
+
     }
 
     /**
@@ -56,7 +60,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     @Override
     public void put(K key, V value) {
         int hashCode;
-        
+
         if (key != null) {
             hashCode = Math.abs(key.hashCode()) % chains.length;
         } else {
@@ -66,14 +70,14 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
             chains[hashCode] = new ArrayDictionary<K, V>();
         }
         int sizeDifference = chains[hashCode].size();
-        
+
         chains[hashCode].put(key, value);
 
-        this.size += (chains[hashCode].size() - sizeDifference);
-        
-        if ((double) this.size / (double) chains.length > 0.75) {
+        this.chainSize += (chains[hashCode].size() - sizeDifference);
+
+        if ((double) this.chainSize / (double) chains.length > 0.75) {
             IDictionary<K, V>[] newChains = makeArrayOfChains(chains.length * 2 - 1);
-            
+
             for (KVPair<K, V> pair : this) {
                 int newHash = pair.getKey().hashCode();
                 if (newChains[newHash % newChains.length] == null) {
@@ -81,7 +85,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
                 }
                 newChains[newHash % newChains.length].put(pair.getKey(), pair.getValue());
             }
-            
+
             chains = newChains;
         } 
     }
@@ -97,7 +101,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
         if (chains[hashCode] == null || !chains[hashCode].containsKey(key)) {
             throw new NoSuchKeyException();
         } else {
-            this.size--;
+            this.chainSize--;
             return chains[hashCode].remove(key);
         }
     }
@@ -117,10 +121,10 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
             return chains[hashCode].containsKey(key);
         }
     }
-    
+
     @Override
     public int size() {
-        return this.size;
+        return this.chainSize;
     }
 
     @Override
@@ -128,7 +132,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
         // Note: you do not need to change this method
         return new ChainedIterator<>(this.chains);
     }
-    
+
 
     /**
      * Hints:
@@ -183,21 +187,24 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
 
         @Override
         public boolean hasNext() {
-            if (current > chains.length - 1) {
-                return false;
-            } else if (iter == null || !iter.hasNext()) {
+            for (int i = current; i < chains.length; i++) {
+                if (iter != null) {
+                    if (iter.hasNext()) {
+                        return true;
+                    }
+                } 
                 if (current == chains.length - 1) {
                     return false;
                 }
-                current++;
+                this.current++;
                 if (chains[current] != null) {
                     iter = chains[current].iterator();
                 } else {
                     iter = null;
                 }
-                return this.hasNext();
             }
-            return true;
+            return false;
+
         }
 
         @Override

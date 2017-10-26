@@ -348,7 +348,7 @@ public abstract class TestDictionary extends BaseTest {
         assertTrue(copy.isEmpty());
     }
 
-    @Test()
+    @Test(timeout=SECOND)
     public void testIteratorUnusualKeys() {
         IDictionary<String, String> map = this.newDictionary();
 

@@ -1,10 +1,13 @@
+// Andrew Tran
+// Constance La
+// CSE 373
+// Project 2
+
 package datastructures.concrete;
 
 import datastructures.concrete.dictionaries.ChainedHashDictionary;
 import datastructures.interfaces.IDictionary;
 import datastructures.interfaces.ISet;
-import misc.exceptions.NotYetImplementedException;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -21,12 +24,17 @@ public class ChainedHashSet<T> implements ISet<T> {
 
     @Override
     public void add(T item) {
+        
         map.put(item, true);
     }
 
     @Override
     public void remove(T item) {
-        map.remove(item);
+        if (!map.containsKey(item)) {
+            throw new NoSuchElementException();
+        } else {
+            map.remove(item);
+        }
     }
 
     @Override
