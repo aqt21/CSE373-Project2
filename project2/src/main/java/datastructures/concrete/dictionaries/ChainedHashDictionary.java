@@ -26,7 +26,6 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     public ChainedHashDictionary() {
         this.chains = makeArrayOfChains(10);
         this.chainSize = 0;
-
     }
 
     /**
@@ -45,12 +44,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
 
     @Override
     public V get(K key) {
-        int hashCode;
-        if (key != null) {
-            hashCode = Math.abs(key.hashCode()) % chains.length;
-        } else {
-            hashCode = 0;
-        }
+        int hashCode = setHashCode(key);
         if (chains[hashCode] == null || !chains[hashCode].containsKey(key)) {
             throw new NoSuchKeyException();
         }
@@ -59,20 +53,13 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
 
     @Override
     public void put(K key, V value) {
-        int hashCode;
-
-        if (key != null) {
-            hashCode = Math.abs(key.hashCode()) % chains.length;
-        } else {
-            hashCode = 0;
-        }
+        int hashCode = setHashCode(key);
+        
         if (chains[hashCode] == null) {
             chains[hashCode] = new ArrayDictionary<K, V>();
         }
         int sizeDifference = chains[hashCode].size();
-
         chains[hashCode].put(key, value);
-
         this.chainSize += (chains[hashCode].size() - sizeDifference);
 
         if ((double) this.chainSize / (double) chains.length > 0.75) {
@@ -92,12 +79,8 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
 
     @Override
     public V remove(K key) {
-        int hashCode;
-        if (key != null) {
-            hashCode = Math.abs(key.hashCode()) % chains.length;
-        } else {
-            hashCode = 0;
-        }
+        int hashCode = setHashCode(key);
+        
         if (chains[hashCode] == null || !chains[hashCode].containsKey(key)) {
             throw new NoSuchKeyException();
         } else {
@@ -108,12 +91,7 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
 
     @Override
     public boolean containsKey(K key) {
-        int hashCode;
-        if (key != null) {
-            hashCode = Math.abs(key.hashCode()) % chains.length;
-        } else {
-            hashCode = 0;
-        }
+        int hashCode = setHashCode(key);
 
         if (chains[hashCode] == null) {
             return false;
@@ -125,6 +103,15 @@ public class ChainedHashDictionary<K, V> implements IDictionary<K, V> {
     @Override
     public int size() {
         return this.chainSize;
+    }
+    
+    // Returns hash code for given key
+    private int setHashCode(K key) {
+        if (key != null) {
+            return Math.abs(key.hashCode()) % chains.length;
+        } else {
+            return 0;
+        }
     }
 
     @Override
